@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rails, Ropes &amp; Rack — A Fixed-Guideway Field Map</title>
+<meta name="description" content="Everything that runs on a cable, a rail, or a rack — gondolas, funiculars, cable cars, high-speed rail and maglev — how each one works, how to spot it, and where to ride the famous ones." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0A0C0F;
+    --panel:#13171D;
+    --panel-2:#171C23;
+    --line:#262C35;
+    --line-soft:#1d232b;
+    --ink:#E7EBF1;
+    --ink-mid:#AEB6C2;
+    --ink-dim:#737D8B;
+    --off:#F5A524;        /* CABLE — hauled by a rope */
+    --off-bright:#FFC25A;
+    --def:#35CFE0;        /* RAIL — self-propelled on a track */
+    --def-deep:#1f9aa8;
+    --crit:#E5484D;
+    --maxw:1080px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 85% -10%, rgba(245,165,36,.06), transparent 60%),
+      radial-gradient(900px 600px at -10% 30%, rgba(53,207,224,.05), transparent 55%);
+    background-attachment:fixed;
+  }
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  a{color:inherit}
+  a.lnk{color:inherit;text-decoration:underline;text-decoration-color:var(--ink-dim);
+    text-underline-offset:2px;text-decoration-thickness:1px;transition:.15s}
+  a.lnk:hover{text-decoration-color:var(--def);color:var(--ink)}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(10,12,15,.82);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+  .nav-in{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:18px;padding:11px 22px;}
+  .brand{font-family:"IBM Plex Mono";font-weight:700;font-size:13px;letter-spacing:.02em;
+    color:var(--ink);white-space:nowrap;display:flex;align-items:center;gap:8px}
+  .brand .dot{width:8px;height:8px;border-radius:2px;
+    background:linear-gradient(135deg,var(--off),var(--def));box-shadow:0 0 12px rgba(245,165,36,.5)}
+  .nav-links{display:flex;gap:3px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+  .nav-links::-webkit-scrollbar{display:none}
+  .nav-links a{font-family:"IBM Plex Mono";font-size:11.5px;color:var(--ink-dim);
+    text-decoration:none;padding:6px 9px;border-radius:6px;white-space:nowrap;transition:.15s}
+  .nav-links a:hover{color:var(--ink);background:var(--panel)}
+
+  main{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  section{padding:74px 0;border-bottom:1px solid var(--line-soft)}
+  section:last-of-type{border-bottom:none}
+
+  .eyebrow{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-dim);display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .eyebrow .idx{color:var(--off)}
+  h2{font-family:"IBM Plex Mono";font-weight:600;font-size:clamp(24px,3.4vw,34px);
+    line-height:1.15;margin:0 0 14px;letter-spacing:-.01em}
+  h3{font-family:"IBM Plex Mono";font-weight:600;font-size:16px;margin:0 0 6px;letter-spacing:.01em}
+  p{margin:0 0 16px;color:var(--ink-mid);max-width:68ch}
+  p strong{color:var(--ink);font-weight:600}
+  .lead{font-size:18px;color:var(--ink)}
+  .legend-tag{font-family:"IBM Plex Mono";font-size:11px;padding:2px 7px;border-radius:5px;
+    border:1px solid;white-space:nowrap;font-weight:500}
+  .t-off{color:var(--off-bright);border-color:rgba(245,165,36,.35);background:rgba(245,165,36,.07)}
+  .t-def{color:var(--def);border-color:rgba(53,207,224,.35);background:rgba(53,207,224,.07)}
+
+  .hero{padding:96px 0 84px;border-bottom:1px solid var(--line-soft)}
+  .hero .kicker{font-family:"IBM Plex Mono";font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-dim);margin-bottom:26px}
+  .hero h1{font-family:"IBM Plex Mono";font-weight:700;font-size:clamp(34px,6.2vw,62px);
+    line-height:1.04;margin:0 0 8px;letter-spacing:-.02em}
+  .hero h1 .neg{color:var(--off)}
+  .hero h1 .pos{color:var(--def)}
+  .hero .sub{font-size:19px;color:var(--ink-mid);max-width:64ch;margin-top:22px}
+  .prompt-line{font-family:"IBM Plex Mono";font-size:14px;color:var(--ink-dim);
+    margin-top:34px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .prompt-line .pmt{color:var(--off)}
+  .cursor{display:inline-block;width:9px;height:17px;background:var(--def);margin-left:2px;
+    animation:blink 1.1s steps(2,start) infinite;vertical-align:-2px}
+  @keyframes blink{to{opacity:0}}
+  @media (prefers-reduced-motion:reduce){.cursor{animation:none}}
+  .legend{display:flex;gap:10px;margin-top:30px;flex-wrap:wrap}
+
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:18px 18px 16px;transition:.18s}
+  .card:hover{border-color:#33404e;transform:translateY(-2px)}
+  .card .num{font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-dim);letter-spacing:.08em;margin-bottom:8px}
+  .card p{font-size:14px;margin:0;max-width:none;color:var(--ink-dim)}
+  .card .spot{font-family:"IBM Plex Mono";font-size:11.5px;color:var(--ink-dim);margin-top:9px}
+  .card .spot b{color:var(--ink-mid);font-weight:500}
+  .card.off{border-top:2px solid var(--off)}
+  .card.def{border-top:2px solid var(--def)}
+
+  .callout{border-left:2px solid var(--off);background:rgba(245,165,36,.05);padding:14px 18px;border-radius:0 10px 10px 0;margin:18px 0;font-size:14.5px;color:var(--ink-mid)}
+  .callout.def{border-left-color:var(--def);background:rgba(53,207,224,.05)}
+
+  /* comparison matrix */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 16px}
+  .filt{font-family:"IBM Plex Mono";font-size:12px;color:var(--ink-dim);background:var(--panel);
+    border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer;transition:.15s}
+  .filt:hover{color:var(--ink);border-color:#33404e}
+  .filt.on{color:var(--bg);background:var(--def);border-color:var(--def);font-weight:600}
+  .filt.on.cable{background:var(--off);border-color:var(--off)}
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  table.matrix{border-collapse:collapse;width:100%;min-width:720px;font-size:13.5px}
+  table.matrix th{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-dim);text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:var(--panel-2);cursor:pointer;white-space:nowrap;user-select:none}
+  table.matrix th:hover{color:var(--ink)}
+  table.matrix th .ar{opacity:.4;font-size:9px}
+  table.matrix td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--ink-mid);vertical-align:top}
+  table.matrix tr:last-child td{border-bottom:none}
+  table.matrix tr:hover td{background:rgba(255,255,255,.015)}
+  table.matrix .nm{font-family:"IBM Plex Mono";font-weight:600;color:var(--ink);white-space:nowrap}
+  table.matrix .nm a{text-decoration:none}
+  table.matrix .nm a:hover{color:var(--def)}
+  .fam{font-family:"IBM Plex Mono";font-size:10.5px;padding:2px 7px;border-radius:5px;border:1px solid;white-space:nowrap}
+  .fam.cable{color:var(--off-bright);border-color:rgba(245,165,36,.35);background:rgba(245,165,36,.07)}
+  .fam.rail{color:var(--def);border-color:rgba(53,207,224,.35);background:rgba(53,207,224,.07)}
+  .num-c{font-family:"IBM Plex Mono";white-space:nowrap}
+
+  /* ride log */
+  .road{margin-top:8px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+  .road-head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+  .road-head .ttl{font-family:"IBM Plex Mono";font-size:13px;letter-spacing:.04em;color:var(--ink)}
+  .meter{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .meter .bar{width:120px;height:7px;border-radius:4px;background:#0e1115;overflow:hidden;border:1px solid var(--line)}
+  .meter .fill{height:100%;width:0;background:linear-gradient(90deg,var(--off),var(--def));transition:width .4s ease}
+  .meter .pct{font-family:"IBM Plex Mono";font-size:12px;color:var(--ink-dim);min-width:34px;text-align:right}
+  .rides{display:grid;grid-template-columns:repeat(2,1fr);gap:0 24px;padding:8px 20px 16px}
+  @media(max-width:620px){.rides{grid-template-columns:1fr}}
+  .task{display:flex;gap:12px;padding:11px 0;cursor:pointer;align-items:flex-start;border-top:1px solid var(--line-soft)}
+  .box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--ink-dim);flex-shrink:0;margin-top:2px;
+    display:flex;align-items:center;justify-content:center;transition:.15s}
+  .box svg{width:11px;height:11px;opacity:0;transition:.15s}
+  .task.done .box{background:var(--def);border-color:var(--def)}
+  .task.done .box svg{opacity:1}
+  .task.done .txt{color:var(--ink-dim)}
+  .task .txt{font-size:14px;color:var(--ink);line-height:1.4}
+  .task .txt em{font-style:normal;color:var(--ink-dim);font-size:12px;display:block;margin-top:1px}
+  .rode{font-family:"IBM Plex Mono";font-size:10px;color:var(--off-bright);border:1px solid rgba(245,165,36,.4);
+    border-radius:4px;padding:1px 5px;margin-left:7px;white-space:nowrap}
+
+  .row{display:grid;grid-template-columns:180px 1fr;gap:16px;padding:16px 0;border-top:1px solid var(--line-soft)}
+  .row:first-of-type{border-top:none}
+  @media(max-width:620px){.row{grid-template-columns:1fr;gap:4px}}
+  .row .name{font-family:"IBM Plex Mono";font-weight:600;font-size:14px;color:var(--ink)}
+  .row .name .yr{display:block;font-weight:400;font-size:11px;color:var(--ink-dim);margin-top:3px}
+  .row .desc{font-size:14px;color:var(--ink-mid);max-width:66ch}
+
+  .src{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-top:6px}
+  @media(max-width:680px){.src{grid-template-columns:1fr}}
+  .src a{font-size:13.5px;color:var(--ink-mid);text-decoration:none;padding:7px 0;border-top:1px solid var(--line-soft);display:flex;gap:9px;transition:.15s}
+  .src a:hover{color:var(--def)}
+  .src a .k{font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-dim);min-width:18px}
+
+  footer{max-width:var(--maxw);margin:0 auto;padding:34px 22px 60px;color:var(--ink-dim);font-size:12.5px;font-family:"IBM Plex Mono"}
+
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
+  :focus-visible{outline:2px solid var(--def);outline-offset:3px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <div class="brand"><span class="dot"></span>RAILS&nbsp;ROPES&nbsp;&amp;&nbsp;RACK</div>
+    <nav class="nav-links">
+      <a href="#map">00·map</a>
+      <a href="#aerial">01·aerial</a>
+      <a href="#ground">02·ground&nbsp;cable</a>
+      <a href="#rail">03·rail</a>
+      <a href="#concepts">04·under&nbsp;the&nbsp;hood</a>
+      <a href="#matrix">05·matrix</a>
+      <a href="#famous">06·famous&nbsp;rides</a>
+      <a href="#records">07·records</a>
+      <a href="#ridelog">08·ride&nbsp;log</a>
+      <a href="#sources">refs</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <main style="padding-top:0">
+    <div class="kicker">A field map for everything that runs on a fixed guideway</div>
+    <h1>Held up by a <span class="neg">rope</span>.<br>Or held down to a <span class="pos">rail</span>.</h1>
+    <p class="sub">Gondolas, funiculars, cable cars, cog railways, trams, metros, high-speed rail, maglev — every machine that can't steer, because its path is built into the ground or strung through the air. Here's how each one actually works, how to tell them apart at a glance, and where to ride the famous ones. One page each, with the source pinned at the top.</p>
+    <div class="prompt-line mono">
+      <span class="pmt">guideway:~$</span>
+      <span>is it hauled by a cable · or does it carry its own engine?</span>
+      <span class="cursor"></span>
+    </div>
+    <div class="legend">
+      <span class="legend-tag t-off">▲ amber = cable-hauled — the rope does the work</span>
+      <span class="legend-tag t-def">▼ cyan = rail — carries its own traction</span>
+    </div>
+  </main>
+</section>
+
+<main>
+
+<!-- 00 MAP -->
+<section id="map">
+  <div class="eyebrow reveal"><span class="idx">00</span> how to read the map</div>
+  <h2 class="reveal">One question splits the whole world in two</h2>
+  <p class="reveal lead">Every fixed-guideway machine answers the same first question: <strong>where does the pulling force live?</strong> Either a stationary engine hauls the vehicle along a <span style="color:var(--off-bright)">cable</span> and the car is just a gripper hanging on — or the vehicle <span style="color:var(--def)">carries its own motor</span> and grips a rail. That single fork explains almost everything downstream: the speed limits, the grades it can climb, how many people it moves, and why it looks the way it does.</p>
+  <div class="callout reveal">Three sub-questions finish the job. <strong>In the air or on the ground?</strong> (aerial ropeway vs. ground-level). <strong>Adhesion or a rack?</strong> (smooth steel wheels slip past ~7–10% grade; a toothed rack rail beats that). <strong>Wheels or no wheels?</strong> (steel-on-steel, rubber-on-concrete, or maglev floating on a magnetic field). Every page here is one leaf of that tree.</p>
+</section>
+
+<!-- 01 AERIAL -->
+<section id="aerial">
+  <div class="eyebrow reveal"><span class="idx">01</span> cable-suspended · aerial</div>
+  <h2 class="reveal">Hanging from a wire</h2>
+  <p class="reveal">Aerial ropeways ignore the terrain entirely — they fly over it. A loop of steel cable runs between towers, driven by a big bullwheel at one end; the cabins either clamp on permanently or grip and release. <span style="color:var(--ink-dim)">Each links to a one-page explainer.</span></p>
+  <div class="grid g2 reveal">
+    <div class="card off"><div class="num">A01</div><h3><a class="lnk" href="aerial/gondola.html">Gondola Lift</a></h3><p>Small enclosed cabins on a continuously circulating loop. Modern ones detach from the cable to slow down in the station, then re-grip and accelerate — the workhorse of ski resorts and urban cable transit.</p><div class="spot">Spot it: <b>a train of small cabins, always moving</b></div></div>
+    <div class="card off"><div class="num">A02</div><h3><a class="lnk" href="aerial/aerial-tramway.html">Aerial Tramway</a></h3><p>Two big cabins on a fixed track cable that shuttle back and forth, counterbalancing each other. Fewer, bigger, slower-to-cycle — but they span enormous gaps.</p><div class="spot">Spot it: <b>two large cabins, one up / one down</b></div></div>
+    <div class="card off"><div class="num">A03</div><h3><a class="lnk" href="aerial/tricable-3s.html">3S / Tricable Gondola</a></h3><p>Two fixed track cables plus one moving haul rope — the aerial-tramway's stability with the gondola's continuous flow. Huge cabins, huge spans, wind-stable.</p><div class="spot">Spot it: <b>big cabins on a thick double cable</b></div></div>
+    <div class="card off"><div class="num">A04</div><h3><a class="lnk" href="aerial/chairlift.html">Chairlift</a></h3><p>Open chairs on a circulating rope — the simplest, cheapest aerial lift. Detachable high-speed versions slow in the station; fixed-grip ones just keep moving.</p><div class="spot">Spot it: <b>open seats, feet dangling</b></div></div>
+  </div>
+</section>
+
+<!-- 02 GROUND CABLE -->
+<section id="ground">
+  <div class="eyebrow reveal"><span class="idx">02</span> cable-hauled · on the ground</div>
+  <h2 class="reveal">Dragged up the hill</h2>
+  <p class="reveal">Same idea as the ropeways — a stationary engine and a cable — but the vehicle stays on rails on the ground. These are how you beat a slope too steep for an ordinary train. <span style="color:var(--ink-dim)">Each links to a one-page explainer.</span></p>
+  <div class="grid g3 reveal">
+    <div class="card off"><h3><a class="lnk" href="ground/funicular.html">Funicular</a></h3><p>Two cars permanently coupled to opposite ends of one cable on a steep incline — each is the counterweight for the other, so the motor only fights friction and imbalance. Climbs grades a train could never hold.</p><div class="spot">Spot it: <b>two cars, passing at a midpoint</b></div></div>
+    <div class="card off"><h3><a class="lnk" href="ground/cable-car.html">Cable Car</a></h3><p>San Francisco's icon: cars with no engine that grip a continuously moving underground cable, releasing it to coast and brake. A 19th-century survivor.</p><div class="spot">Spot it: <b>grip lever, slot in the street</b></div></div>
+    <div class="card off"><h3><a class="lnk" href="ground/rack-railway.html">Rack &amp; Pinion Railway</a></h3><p>A self-powered train that adds a toothed cog engaging a rack rail between the running rails — mechanical grip for grades far past what smooth wheels can hold. (Half cable-family in spirit, but it carries its own engine.)</p><div class="spot">Spot it: <b>a toothed rail down the middle</b></div></div>
+  </div>
+</section>
+
+<!-- 03 RAIL -->
+<section id="rail">
+  <div class="eyebrow reveal"><span class="idx">03</span> rail · self-propelled</div>
+  <h2 class="reveal">Carrying its own engine</h2>
+  <p class="reveal">No cable. The vehicle makes its own traction and grips a guideway — steel wheel on steel rail, rubber tyre on concrete, or nothing at all, floating on a magnetic field. This is where speed and capacity live. <span style="color:var(--ink-dim)">Each links to a one-page explainer.</span></p>
+  <div class="grid g3 reveal">
+    <div class="card def"><h3><a class="lnk" href="rail/high-speed-rail.html">High-Speed Rail</a></h3><p>Steel wheel on steel rail, engineered to ~250–350 km/h: dedicated gentle-curve track, aerodynamic trainsets, electrified overhead. Shinkansen, TGV, ICE, Eurostar.</p><div class="spot">Spot it: <b>long pointed nose, sealed track</b></div></div>
+    <div class="card def"><h3><a class="lnk" href="rail/maglev.html">Maglev</a></h3><p>No wheels. Magnets levitate and propel the train, deleting rolling friction — the fastest ground transport ever built (603 km/h on test). Shanghai runs one commercially.</p><div class="spot">Spot it: <b>no wheels, a wrap-around guideway</b></div></div>
+    <div class="card def"><h3><a class="lnk" href="rail/tram-light-rail.html">Tram / Light Rail</a></h3><p>Street-level electric rail — from single streetcars sharing traffic to segregated light-rail lines. The most common rail you'll actually touch.</p><div class="spot">Spot it: <b>rails in the road, overhead wire</b></div></div>
+    <div class="card def"><h3><a class="lnk" href="rail/monorail.html">Monorail</a></h3><p>A single beam instead of two rails — straddled from above or suspended from below. More icon than backbone, but the suspended Wuppertal line has run since 1901.</p><div class="spot">Spot it: <b>one fat beam, not two rails</b></div></div>
+    <div class="card def"><h3><a class="lnk" href="rail/metro.html">Metro / Subway</a></h3><p>Grade-separated urban heavy rail — its own tunnels and viaducts, no crossings, third-rail or overhead power. The highest-capacity mover on this whole map.</p><div class="spot">Spot it: <b>own right-of-way, no level crossings</b></div></div>
+    <div class="card def"><h3><a class="lnk" href="rail/people-mover.html">Automated People Mover</a></h3><p>Driverless short-haul shuttles on a dedicated guideway — airport terminals, downtown loops. Some are self-propelled on rubber tyres; some are cable-drawn.</p><div class="spot">Spot it: <b>driverless, airport or campus loop</b></div></div>
+  </div>
+</section>
+
+<!-- 04 CONCEPTS -->
+<section id="concepts">
+  <div class="eyebrow reveal"><span class="idx">04</span> under the hood</div>
+  <h2 class="reveal">The four ideas that make it all work</h2>
+  <p class="reveal">Strip away the vehicles and there are only a handful of clever mechanisms underneath. Learn these and every machine above becomes obvious. <span style="color:var(--ink-dim)">Each links to a one-page explainer.</span></p>
+  <div class="grid g2 reveal">
+    <div class="card def"><h3><a class="lnk" href="concepts/detachable-grip.html">The Detachable Grip</a></h3><p>How a gondola cabin can grab a cable moving at 6 m/s, then let go to crawl through the station at walking pace — the spring-loaded clamp that made modern high-capacity ropeways possible.</p></div>
+    <div class="card def"><h3><a class="lnk" href="concepts/adhesion-vs-rack.html">Adhesion vs. Rack</a></h3><p>Why smooth steel wheels slip once a grade passes ~7–10%, and how a toothed rack rail (or a cable) beats the limit. The single number that decides which machine you need.</p></div>
+    <div class="card def"><h3><a class="lnk" href="concepts/maglev-levitation.html">How Maglev Levitates</a></h3><p>EMS vs. EDS — attraction-based electromagnets pulling up under the track vs. repulsion-based superconductors. How you float a train and shove it forward with the same field.</p></div>
+    <div class="card def"><h3><a class="lnk" href="concepts/counterbalance.html">Counterbalance &amp; Haulage</a></h3><p>Why a funicular barely needs a motor, and how one bullwheel drives a whole loop of gondolas. The physics of letting the down-car pay for the up-car.</p></div>
+  </div>
+</section>
+
+<!-- 05 MATRIX -->
+<section id="matrix">
+  <div class="eyebrow reveal"><span class="idx">05</span> the comparison matrix</div>
+  <h2 class="reveal">Every type, side by side</h2>
+  <p class="reveal">Representative figures — real systems vary. Click a header to sort; filter by family. Speeds and capacities are typical operating values, not records (those live in <a class="lnk" href="#records">§07</a>).</p>
+  <div class="filters reveal">
+    <button class="filt on" data-f="all">all</button>
+    <button class="filt cable" data-f="cable">▲ cable-hauled</button>
+    <button class="filt" data-f="rail">▼ rail</button>
+  </div>
+  <div class="table-wrap reveal">
+    <table class="matrix" id="matrix">
+      <thead><tr>
+        <th data-k="name">Type <span class="ar">▾</span></th>
+        <th data-k="fam">Family <span class="ar">▾</span></th>
+        <th data-k="speed">Typical speed <span class="ar">▾</span></th>
+        <th data-k="grade">Max grade <span class="ar">▾</span></th>
+        <th data-k="cap">Capacity (pph) <span class="ar">▾</span></th>
+        <th data-k="power">Powered by <span class="ar">▾</span></th>
+      </tr></thead>
+      <tbody>
+        <tr data-fam="cable" data-speed="21" data-grade="100" data-cap="3600"><td class="nm"><a class="lnk" href="aerial/gondola.html">Gondola lift</a></td><td><span class="fam cable">cable · aerial</span></td><td class="num-c">~21 km/h</td><td class="num-c">terrain-free</td><td class="num-c">2,000–3,600</td><td>Fixed engine, haul rope</td></tr>
+        <tr data-fam="cable" data-speed="45" data-grade="100" data-cap="2000"><td class="nm"><a class="lnk" href="aerial/aerial-tramway.html">Aerial tramway</a></td><td><span class="fam cable">cable · aerial</span></td><td class="num-c">~45 km/h</td><td class="num-c">terrain-free</td><td class="num-c">500–2,000</td><td>Fixed engine, haul rope</td></tr>
+        <tr data-fam="cable" data-speed="27" data-grade="100" data-cap="6000"><td class="nm"><a class="lnk" href="aerial/tricable-3s.html">3S tricable</a></td><td><span class="fam cable">cable · aerial</span></td><td class="num-c">~27 km/h</td><td class="num-c">terrain-free</td><td class="num-c">up to 6,000</td><td>Fixed engine, haul rope</td></tr>
+        <tr data-fam="cable" data-speed="18" data-grade="100" data-cap="4000"><td class="nm"><a class="lnk" href="aerial/chairlift.html">Chairlift</a></td><td><span class="fam cable">cable · aerial</span></td><td class="num-c">~18 km/h</td><td class="num-c">terrain-free</td><td class="num-c">2,400–4,000</td><td>Fixed engine, haul rope</td></tr>
+        <tr data-fam="cable" data-speed="35" data-grade="110" data-cap="1000"><td class="nm"><a class="lnk" href="ground/funicular.html">Funicular</a></td><td><span class="fam cable">cable · ground</span></td><td class="num-c">~35 km/h</td><td class="num-c">~110%</td><td class="num-c">up to ~1,000</td><td>Fixed engine, counterbalanced</td></tr>
+        <tr data-fam="cable" data-speed="15" data-grade="21" data-cap="350"><td class="nm"><a class="lnk" href="ground/cable-car.html">Cable car (SF)</a></td><td><span class="fam cable">cable · ground</span></td><td class="num-c">~15 km/h</td><td class="num-c">~21%</td><td class="num-c">~300–500</td><td>Continuous cable, hand grip</td></tr>
+        <tr data-fam="rail" data-speed="30" data-grade="48" data-cap="900"><td class="nm"><a class="lnk" href="ground/rack-railway.html">Rack railway</a></td><td><span class="fam rail">rail · rack</span></td><td class="num-c">~30 km/h</td><td class="num-c">~48%</td><td class="num-c">~300–900</td><td>Onboard, cog + rack</td></tr>
+        <tr data-fam="rail" data-speed="300" data-grade="4" data-cap="1300"><td class="nm"><a class="lnk" href="rail/high-speed-rail.html">High-speed rail</a></td><td><span class="fam rail">rail · adhesion</span></td><td class="num-c">250–350 km/h</td><td class="num-c">~3.5–4%</td><td class="num-c">~1,000/train</td><td>Onboard electric, catenary</td></tr>
+        <tr data-fam="rail" data-speed="430" data-grade="10" data-cap="1200"><td class="nm"><a class="lnk" href="rail/maglev.html">Maglev</a></td><td><span class="fam rail">rail · maglev</span></td><td class="num-c">up to 430 km/h</td><td class="num-c">~10%</td><td class="num-c">~1,000/train</td><td>Linear motor, no contact</td></tr>
+        <tr data-fam="rail" data-speed="35" data-grade="8" data-cap="8000"><td class="nm"><a class="lnk" href="rail/tram-light-rail.html">Tram / light rail</a></td><td><span class="fam rail">rail · adhesion</span></td><td class="num-c">~20–40 km/h</td><td class="num-c">~8%</td><td class="num-c">up to ~8,000</td><td>Onboard electric, catenary</td></tr>
+        <tr data-fam="rail" data-speed="60" data-grade="6" data-cap="10000"><td class="nm"><a class="lnk" href="rail/monorail.html">Monorail</a></td><td><span class="fam rail">rail · beam</span></td><td class="num-c">~30–90 km/h</td><td class="num-c">~6%</td><td class="num-c">up to ~10,000</td><td>Onboard, rubber on beam</td></tr>
+        <tr data-fam="rail" data-speed="35" data-grade="4" data-cap="36000"><td class="nm"><a class="lnk" href="rail/metro.html">Metro / subway</a></td><td><span class="fam rail">rail · adhesion</span></td><td class="num-c">~30–40 km/h avg</td><td class="num-c">~4%</td><td class="num-c">up to ~36,000</td><td>Onboard, third rail / catenary</td></tr>
+        <tr data-fam="rail" data-speed="50" data-grade="6" data-cap="12000"><td class="nm"><a class="lnk" href="rail/people-mover.html">People mover</a></td><td><span class="fam rail">rail · AGT</span></td><td class="num-c">~40–50 km/h</td><td class="num-c">~6%</td><td class="num-c">up to ~12,000</td><td>Onboard tyres, or cable</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 06 FAMOUS -->
+<section id="famous">
+  <div class="eyebrow reveal"><span class="idx">06</span> famous rides</div>
+  <h2 class="reveal">The ones worth crossing a country for</h2>
+  <p class="reveal">A few marquee lines where the engineering and the scenery both peak. <span class="rode">rode it</span> marks the ones Igor hit on the 2026 Scandinavia trip.</p>
+  <div class="reveal">
+    <div class="row"><div class="name"><a class="lnk" href="famous/flam-railway.html">Flåm Railway</a><span class="yr">Flåmsbana · Norway · 1940 <span class="rode">rode it</span></span></div><div class="desc">One of the world's steepest adhesion railways — no rack, just grit and five braking systems — dropping 866 m through 20 tunnels from mountain to fjord. The reference scenic rail journey.</div></div>
+    <div class="row"><div class="name"><a class="lnk" href="famous/channel-tunnel.html">Channel Tunnel</a><span class="yr">Eurostar / Le Shuttle · 1994</span></div><div class="desc">50.5 km under the sea between England and France — the longest undersea rail tunnel ever bored, carrying 300 km/h Eurostars and car-shuttle trains through three parallel tubes.</div></div>
+  </div>
+  <div class="callout def reveal">More trip rides on the map: the <a class="lnk" href="ground/funicular.html">Fløibanen funicular</a> (Bergen) <span class="rode">rode it</span>, and the <a class="lnk" href="rail/high-speed-rail.html">Bergen Railway</a> Oslo→Myrdal <span class="rode">rode it</span>. Got a favorite line I'm missing? It's a one-page add.</div>
+</section>
+
+<!-- 07 RECORDS -->
+<section id="records">
+  <div class="eyebrow reveal"><span class="idx">07</span> superlatives</div>
+  <h2 class="reveal">The record-holders</h2>
+  <p class="reveal">Where each dimension tops out. Full detail, sources, and the near-misses on the <a class="lnk" href="records/superlatives.html">records page</a>.</p>
+  <div class="grid g3 reveal">
+    <div class="card off"><div class="num">STEEPEST</div><h3>Stoosbahn</h3><p>110% grade (~47.7°) — the steepest funicular on Earth, with barrel-shaped tilting cabins that stay level. Switzerland, 2017.</p></div>
+    <div class="card def"><div class="num">FASTEST</div><h3>603 km/h</h3><p>Japan's L0 maglev on the Chūō test track (2015) — the fastest a crewed train has ever gone. Steel-wheel record: 574.8 km/h (TGV, 2007).</p></div>
+    <div class="card off"><div class="num">LONGEST SPAN</div><h3>3S / tramways</h3><p>Single aerial spans over 3 km between towers — cable systems cross gorges nothing on the ground can.</p></div>
+    <div class="card def"><div class="num">DEEPEST/LONGEST TUNNEL</div><h3>Gotthard Base</h3><p>57 km through the Alps — the world's longest rail tunnel. The Channel Tunnel holds the undersea record at 50.5 km.</p></div>
+    <div class="card def"><div class="num">HIGHEST</div><h3>Tanggula</h3><p>5,068 m on the Qinghai–Tibet railway — the highest point on any railway, with oxygen piped into the carriages.</p></div>
+    <div class="card off"><div class="num">HIGHEST CABLE</div><h3>Dagu Glacier</h3><p>Aerial ropeways reach past 3,000 m routinely; the highest top out near 5,000 m in the Himalaya and Andes.</p></div>
+  </div>
+</section>
+
+<!-- 08 RIDE LOG -->
+<section id="ridelog">
+  <div class="eyebrow reveal"><span class="idx">08</span> your ride log</div>
+  <h2 class="reveal">How many have you ridden?</h2>
+  <p class="reveal">Tick every type you've been on — progress saved on this device. A completionist's checklist for the whole taxonomy.</p>
+  <div class="road reveal">
+    <div class="road-head">
+      <span class="ttl mono">RIDDEN</span>
+      <div class="meter"><div class="bar"><div class="fill" id="fill"></div></div><span class="pct mono" id="pct">0%</span></div>
+    </div>
+    <div class="rides">
+      <div class="task" data-id="r-gondola"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Gondola lift<em>ski resort or urban cable car</em></span></div>
+      <div class="task" data-id="r-tram"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Aerial tramway<em>two big cabins — Ulriken, Roosevelt Island</em></span></div>
+      <div class="task" data-id="r-3s"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">3S tricable gondola<em>Whistler Peak 2 Peak, Zugspitze</em></span></div>
+      <div class="task" data-id="r-chair"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Chairlift<em>feet dangling</em></span></div>
+      <div class="task" data-id="r-funi"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Funicular<em>Fløibanen, Stoosbahn</em></span></div>
+      <div class="task" data-id="r-cablecar"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Cable car<em>San Francisco grip car</em></span></div>
+      <div class="task" data-id="r-rack"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Rack railway<em>Pilatus, Jungfrau, Mt. Washington</em></span></div>
+      <div class="task" data-id="r-hsr"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">High-speed rail<em>Shinkansen, TGV, ICE, Eurostar</em></span></div>
+      <div class="task" data-id="r-maglev"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Maglev<em>Shanghai Transrapid</em></span></div>
+      <div class="task" data-id="r-lightrail"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Tram / light rail<em>streetcar</em></span></div>
+      <div class="task" data-id="r-monorail"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Monorail<em>Disney, Tokyo, Wuppertal</em></span></div>
+      <div class="task" data-id="r-metro"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Metro / subway<em>any big city</em></span></div>
+      <div class="task" data-id="r-apm"><span class="box"><svg viewBox="0 0 12 12"><path d="M1 6l3 3 7-7" stroke="#06181b" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Automated people mover<em>airport shuttle</em></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SOURCES -->
+<section id="sources">
+  <div class="eyebrow reveal">references · current as of July 2026</div>
+  <h2 class="reveal">Where this came from</h2>
+  <p class="reveal">Each type page pins its own primary source at the top. The map itself draws on standard references — every claim is verifiable against these.</p>
+  <div class="src reveal">
+    <a href="https://en.wikipedia.org/wiki/Aerial_lift" target="_blank" rel="noopener"><span class="k">01</span>Aerial lift — types &amp; mechanics (Wikipedia)</a>
+    <a href="https://en.wikipedia.org/wiki/Funicular" target="_blank" rel="noopener"><span class="k">02</span>Funicular — counterbalance principle</a>
+    <a href="https://en.wikipedia.org/wiki/Rack_railway" target="_blank" rel="noopener"><span class="k">03</span>Rack railway — adhesion limits &amp; systems</a>
+    <a href="https://en.wikipedia.org/wiki/High-speed_rail" target="_blank" rel="noopener"><span class="k">04</span>High-speed rail — definitions &amp; networks</a>
+    <a href="https://en.wikipedia.org/wiki/Maglev" target="_blank" rel="noopener"><span class="k">05</span>Maglev — EMS vs EDS levitation</a>
+    <a href="https://www.doppelmayr.com/en/" target="_blank" rel="noopener"><span class="k">06</span>Doppelmayr / Garaventa — ropeway manufacturer</a>
+    <a href="https://en.wikipedia.org/wiki/Fl%C3%A5m_Line" target="_blank" rel="noopener"><span class="k">07</span>Flåm Line (Flåmsbana)</a>
+    <a href="https://en.wikipedia.org/wiki/Channel_Tunnel" target="_blank" rel="noopener"><span class="k">08</span>Channel Tunnel</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Built as a field map, not a spec sheet — figures are typical values, systems vary, and every page pins its source. Trip-born on the 2026 Scandinavia run (Fløibanen, the Voss gondola, the Bergen &amp; Flåm railways). Verify against the sources before you quote a number.
+</footer>
+
+<script>
+(function(){
+  // scroll reveal
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  }, {threshold:.12});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  // matrix filter + sort
+  var table = document.getElementById('matrix');
+  var tbody = table.querySelector('tbody');
+  var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+  document.querySelectorAll('.filt').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.filt').forEach(function(x){x.classList.remove('on')});
+      b.classList.add('on');
+      var f = b.getAttribute('data-f');
+      rows.forEach(function(r){ r.style.display = (f==='all'||r.getAttribute('data-fam')===f)?'':'none'; });
+    });
+  });
+  var sortState = {};
+  table.querySelectorAll('th').forEach(function(th){
+    th.addEventListener('click', function(){
+      var k = th.getAttribute('data-k');
+      var asc = !sortState[k]; sortState = {}; sortState[k]=asc;
+      var num = (k==='speed'||k==='grade'||k==='cap');
+      var sorted = rows.slice().sort(function(a,b){
+        var va, vb;
+        if(num){ va=parseFloat(a.getAttribute('data-'+k))||0; vb=parseFloat(b.getAttribute('data-'+k))||0; return asc?va-vb:vb-va; }
+        va=a.querySelector('td').textContent.trim().toLowerCase(); vb=b.querySelector('td').textContent.trim().toLowerCase();
+        return asc?va.localeCompare(vb):vb.localeCompare(va);
+      });
+      sorted.forEach(function(r){ tbody.appendChild(r); });
+    });
+  });
+
+  // ride log — localStorage
+  var KEY='guideway-ridelog-v1';
+  var tasks = Array.prototype.slice.call(document.querySelectorAll('.task'));
+  var fill = document.getElementById('fill');
+  var pct  = document.getElementById('pct');
+  var state = {};
+  try{ state = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ state = {}; }
+  function render(){
+    var done=0;
+    tasks.forEach(function(t){ var id=t.getAttribute('data-id'); if(state[id]){ t.classList.add('done'); done++; } else t.classList.remove('done'); });
+    var p = tasks.length ? Math.round(done/tasks.length*100) : 0;
+    fill.style.width = p+'%'; pct.textContent = p+'%';
+  }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  tasks.forEach(function(t){
+    t.setAttribute('role','button'); t.setAttribute('tabindex','0');
+    function toggle(){ var id=t.getAttribute('data-id'); state[id] = !state[id]; render(); save(); }
+    t.addEventListener('click', toggle);
+    t.addEventListener('keydown', function(ev){ if(ev.key===' '||ev.key==='Enter'){ ev.preventDefault(); toggle(); } });
+  });
+  render();
+})();
+</script>
+</body>
+</html>
