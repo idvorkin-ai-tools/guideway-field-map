@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Counterbalance &amp; Haulage — Rails, Ropes &amp; Rack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>RAILS&nbsp;ROPES&nbsp;&amp;&nbsp;RACK&nbsp;//&nbsp;UNDER&nbsp;THE&nbsp;HOOD</div>
+  <a class="back" href="../index.html#concepts">← back to the map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span>under the hood</span><span class="box wb mono">the physics</span></div>
+  <h1>Counterbalance &amp; Haulage</h1>
+  <div class="authors">let the down-car pay for the up-car</div>
+  <div class="paperlink"><span class="lbl">Source</span><a href="https://en.wikipedia.org/wiki/Funicular" target="_blank" rel="noopener">Wikipedia: Funicular ↗</a></div>
+  <p class="lead">A funicular can haul a loaded car up a mountainside on a motor no bigger than a family car's. The trick isn't a stronger engine — it's refusing to lift the load at all. Bolt a second car to the other end of the rope, and the one coming down pays for the one going up. The machine only supplies the difference.</p>
+
+  <h2>The funicular bargain</h2>
+  <p>Two cars ride one cable looped over a pulley at the summit, moving in lockstep — as one drops, the other climbs the same distance. Lifting a car of mass <strong>M</strong> through height <strong>h</strong> normally costs <strong>M·g·h</strong> of energy. But the descending car falls through that same <strong>h</strong>, releasing almost the entire <strong>M·g·h</strong> and feeding it straight down the rope into the climb. The books very nearly balance. What's left for the motor to cover is only:</p>
+  <ul>
+    <li><strong>Passenger imbalance</strong> — the weight difference (roughly Δm·g·sin θ) between the loaded car and the lighter one.</li>
+    <li><strong>Friction</strong> in the wheels, bearings, sheaves, and the flexing cable itself.</li>
+  </ul>
+  <p>When the heavier car is the one going <em>down</em>, the motor stops pulling and starts holding back — it becomes a brake. That is why a funicular sips power on grades that would leave an adhesion train spinning helplessly.</p>
+
+  <h2>Water instead of a motor</h2>
+  <p>Before electric drives, some funiculars ran on nothing but gravity and plumbing. Each car carries a ballast tank. At the top station the upper car is <strong>filled with water until it outweighs the lower one</strong>; the extra weight drags it downhill and hauls the lower car up. At the bottom the water is dumped, and the cycle repeats. The energy comes entirely from the descending water's potential energy — no engine at all, just a brakeman on a wheel regulating the speed. Lines like Portugal's Bom Jesus (1882) and Fribourg in Switzerland still run this way, the Fribourg car filled with treated wastewater from the town.</p>
+
+  <h2>One bullwheel, one loop</h2>
+  <p>Aerial lifts pull the same trick around a horizontal loop. A <a class="lnk" href="../aerial/gondola.html">gondola</a> or chairlift rope is spliced into one endless circle, driven by a <strong>single large bullwheel</strong> in one terminal that the motor turns. Cabins clamp onto the moving rope with detachable grips, then release inside the stations to slow for boarding. That friction drive only bites if the rope is squeezed hard against the bullwheel, so the far terminal carries a <strong>return bullwheel on a rolling carriage</strong>, pulled backward by a hanging counterweight of many tonnes — or by a hydraulic cylinder holding constant pressure. The steady tension keeps the rope from slipping on the drive wheel and from sagging between towers, whatever the passenger load.</p>
+
+  <h2>Getting the energy back</h2>
+  <p>On a busy loop the loads rarely balance. When more cabins are descending than climbing — a ski hill at day's end — the rope tries to run away downhill, spinning the motor faster than its set speed. Run as a generator, that motor becomes a <strong>regenerative brake</strong>: the surplus gravitational energy becomes electricity pushed back into the grid instead of heat in a brake shoe. The machine that barely needed power going up gives some of it back coming down.</p>
+  <div class="callout off">Same bargain, two geometries. The <a class="lnk" href="../ground/funicular.html">funicular</a> balances one car against another; the gondola balances the descending half of its loop against the climbing half. In both, the motor pays only for the <strong>imbalance</strong> and the <strong>friction</strong> — never the full load.</div>
+</main>
+<footer>Part of the <a href="../index.html">Rails, Ropes &amp; Rack field map</a> · explainer current as of July 2026 · verify against the source.</footer>
+</body>
+</html>

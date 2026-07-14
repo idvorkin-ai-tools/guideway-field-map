@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Detachable Grip — Rails, Ropes &amp; Rack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>RAILS&nbsp;ROPES&nbsp;&amp;&nbsp;RACK&nbsp;//&nbsp;UNDER&nbsp;THE&nbsp;HOOD</div>
+  <a class="back" href="../index.html#concepts">← back to the map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span>under the hood</span><span class="box wb mono">mechanism</span></div>
+  <h1>The Detachable Grip</h1>
+  <div class="authors">grab a moving rope; let go to crawl</div>
+  <div class="paperlink"><span class="lbl">Source</span><a href="https://en.wikipedia.org/wiki/Detachable_chairlift" target="_blank" rel="noopener">Wikipedia — Detachable chairlift ↗</a></div>
+  <p class="lead">A haul rope wants to run fast. A loading platform wants cabins to crawl. The detachable grip is the clamp that reconciles the two — it grabs a rope moving at full line speed, then lets go so a cabin can idle through the station and load at a walking pace.</p>
+
+  <h2>The problem it solves</h2>
+  <p>On any cabled line the rope <em>is</em> the engine: it loops continuously at a single speed, and everything hanging from it moves at exactly that speed. For efficiency you want the rope <strong>fast</strong> — a modern detachable line runs at around <strong>6 m/s (~21 km/h)</strong>. But nobody can safely board a cabin or drop onto a chair moving that fast. The line wants speed; the platform wants stillness, and the grip is where those opposed demands get resolved.</p>
+
+  <h2>The fixed grip's compromise</h2>
+  <p>A <strong>fixed grip</strong> bolts the cabin permanently to the rope. Simple, cheap, and reliable — but it forces the whole system down to loading speed. Slow the rope enough to board (roughly 2.5 m/s) and you have slowed <em>every</em> cabin on the mountain, just so the one or two in the station can load. Travel time and hourly capacity both suffer: the rope can only run as fast as its slowest necessary moment.</p>
+
+  <h2>A spring-loaded, fail-safe clamp</h2>
+  <p>The detachable grip breaks that deadlock. It is a heavy clamp — jaws driven by strong steel springs — bolted to the cabin's hanger. The crucial detail is where the clamping force comes from: <strong>the springs, and only the springs</strong>. At rest they squeeze the jaws shut on the rope with tonnes of force. Holding on is the grip's default state.</p>
+  <p>Opening it takes active work: a <strong>cam or lever</strong> must push against those springs to pry the jaws apart. Nothing holds the rope <em>closed</em> that could fail, so the design is inherently fail-safe:</p>
+  <ul>
+    <li>No power, hydraulics, or signal is needed to keep gripping.</li>
+    <li>Every failure mode defaults to the jaws staying shut on the rope.</li>
+  </ul>
+  <div class="callout off">The springs are the whole safety story: because clamping is the rest state and opening costs energy, a grip cannot quietly let go out on the line — it can only be pried open on purpose, inside a station.</div>
+
+  <h2>The station hand-off</h2>
+  <p>As a cabin reaches a terminal, its grip rolls onto a fixed <strong>opening rail</strong>. A profiled metal strip pushes a roller on the grip, levering the jaws open against the springs, and the cabin lets go of the haul rope. Now free, it is handed to the terminal's own drive — a line of spinning <strong>rubber tyres</strong> or a chain — which slows it to a crawl, walks it around the turnaround while passengers load, then accelerates it back up. On the way out a cam releases the springs, the jaws <strong>snap shut</strong> on the moving rope at matched speed, and the cabin is launched back onto the line. Doppelmayr and Poma each use their own grip geometry, but the choreography is identical.</p>
+
+  <h2>Lineage: the cable-car grip, grown up</h2>
+  <p>This one clamp is what makes modern high-speed detachable <a class="lnk" href="../aerial/chairlift.html">chairlifts</a> and high-capacity <a class="lnk" href="../aerial/gondola.html">gondolas</a> possible: the line runs fast, throughput stays high, and loading stays gentle. The idea descends directly from the San Francisco <a class="lnk" href="../ground/cable-car.html">cable-car grip</a> — the same trick of grabbing and releasing a continuously moving rope — now scaled up, sprung shut, and automated so a rail in the station does the gripman's job.</p>
+</main>
+<footer>Part of the <a href="../index.html">Rails, Ropes &amp; Rack field map</a> · explainer current as of July 2026 · verify against the source.</footer>
+</body>
+</html>
